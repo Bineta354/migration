@@ -1,22 +1,51 @@
-name: CI/CD Pipeline # Le nom de votre workflow
+name: GitHub Actions Pipeline
 
 on:
-  push: # Déclencher le workflow lorsqu'il y a un push (une mise à jour) sur le référentiel
+  push:
     branches:
-      - main # Le workflow est déclenché uniquement lorsque des modifications sont poussées sur la branche "main"
+      - main
 
 jobs:
-  build: # Le nom du job, vous pouvez en avoir plusieurs jobs dans un workflow
-    runs-on: ubuntu-latest # Spécifie l'environnement d'exécution (dans ce cas, une machine virtuelle Ubuntu)
+  build:
+    runs-on: ubuntu-latest
 
-    steps: # Les étapes à exécuter dans le job
-      - name: Checkout code # Le nom de cette étape
-        uses: actions/checkout@v2 # Utiliser l'action "checkout" pour récupérer le code du référentiel
-        
-      - name: Build and Test # Le nom de cette étape
-        run: |
-          # Mettez ici les commandes de compilation et de test
-          # Par exemple, si vous utilisez Node.js, vous pourriez avoir quelque chose comme :
-          npm install # Installer les dépendances
-          npm run build # Compiler le code
-          npm test # Exécuter les tests unitaires
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Maven
+      uses: actions/setup-java@v2
+      with:
+        java-version: '1.8'  # Adjust as needed
+
+    - name: Build with Maven
+      run: mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install
+
+    - name: SonarQube Analysis
+      run: mvn sonar:sonar
+
+    - name: Deploy
+      if: github.event_name == 'push'  # Adjust as needed
+      run: echo "Deploying into Server"
+
+    - name: Approval
+      if: github.event_name == 'push'  # Adjust as needed
+      run: echo "Do you want to proceed for deployment?"
+
+  notifications:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Notify on failure
+      if: failure()
+      run: echo "Sending message to agent"
+
+    - name: Notify on success
+      if: success()
+      run: echo "Sending message to agent"
+
+    - name: Notify on abortion
+      if: cancelled()
+      run: echo "Sending message to agent"
