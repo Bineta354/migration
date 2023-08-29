@@ -1,0 +1,22 @@
+name: CI/CD Pipeline # Le nom de votre workflow
+
+on:
+  push: # Déclencher le workflow lorsqu'il y a un push (une mise à jour) sur le référentiel
+    branches:
+      - main # Le workflow est déclenché uniquement lorsque des modifications sont poussées sur la branche "main"
+
+jobs:
+  build: # Le nom du job, vous pouvez en avoir plusieurs jobs dans un workflow
+    runs-on: ubuntu-latest # Spécifie l'environnement d'exécution (dans ce cas, une machine virtuelle Ubuntu)
+
+    steps: # Les étapes à exécuter dans le job
+      - name: Checkout code # Le nom de cette étape
+        uses: actions/checkout@v2 # Utiliser l'action "checkout" pour récupérer le code du référentiel
+        
+      - name: Build and Test # Le nom de cette étape
+        run: |
+          # Mettez ici les commandes de compilation et de test
+          # Par exemple, si vous utilisez Node.js, vous pourriez avoir quelque chose comme :
+          npm install # Installer les dépendances
+          npm run build # Compiler le code
+          npm test # Exécuter les tests unitaires
